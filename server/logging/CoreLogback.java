@@ -144,7 +144,7 @@ public class CoreLogback {
         appender.setEncoder(encoder);
         appender.setMinimumBreadcrumbLevel(Level.ERROR);
         SentryOptions options = new SentryOptions();
-        options.setDsn();
+        options.setDsn(DIAGNOSTICS_REPORTING_URI);
         appender.setOptions(options);
         appender.start();
         return appender;
