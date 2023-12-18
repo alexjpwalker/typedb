@@ -30,12 +30,12 @@ import java.util.Set;
 
 import static com.vaticle.typedb.common.collection.Collections.list;
 import static com.vaticle.typedb.common.collection.Collections.set;
-import static com.vaticle.typedb.core.common.diagnostics.Diagnostics.REPORTING_URI;
 import static com.vaticle.typedb.core.common.exception.ErrorMessage.Internal.ILLEGAL_STATE;
 import static com.vaticle.typedb.core.common.exception.ErrorMessage.Server.CONFIG_SECTION_MUST_BE_MAP;
 import static com.vaticle.typedb.core.common.exception.ErrorMessage.Server.CONFIG_YAML_MUST_BE_MAP;
 import static com.vaticle.typedb.core.common.exception.ErrorMessage.Server.CONFIGS_UNRECOGNISED;
 import static com.vaticle.typedb.core.common.iterator.Iterators.iterate;
+import static com.vaticle.typedb.core.server.common.Constants.DIAGNOSTICS_REPORTING_URI;
 import static com.vaticle.typedb.core.server.common.Constants.TYPEDB_LOG_FILE_EXT;
 import static com.vaticle.typedb.core.server.common.Constants.TYPEDB_LOG_FILE_NAME;
 import static com.vaticle.typedb.core.server.parameters.util.YAMLParser.KeyValue.Dynamic;
@@ -522,7 +522,7 @@ public class CoreConfigParser extends YAMLParser.Value.Compound<CoreConfig> {
                     boolean enable = Reporting.enable.parse(yaml.asMap(), path);
                     validatePredefinedKeys(parsers, yaml.asMap().keys(), path);
                     if (enable) {
-                        return new CoreConfig.Diagnostics.Reporting(true, REPORTING_URI.toString());
+                        return new CoreConfig.Diagnostics.Reporting(true, DIAGNOSTICS_REPORTING_URI);
                     } else {
                         return new CoreConfig.Diagnostics.Reporting(false, null);
                     }

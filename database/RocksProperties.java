@@ -18,28 +18,26 @@
 
 package com.vaticle.typedb.core.database;
 
-import com.vaticle.typedb.core.common.diagnostics.Diagnostics;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.TableProperties;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import static com.vaticle.typedb.common.collection.Collections.list;
 import static com.vaticle.typedb.core.common.collection.Bytes.MB;
 import static com.vaticle.typedb.core.common.exception.ErrorMessage.Internal.STORAGE_PROPERTY_EXCEPTION;
+import static io.sentry.MeasurementUnit.Information.BYTE;
 import static java.lang.String.format;
-import static java.util.Arrays.stream;
 
 /**
  * A list of interesting properties to retrieve from RocksDB.
@@ -239,6 +237,7 @@ public class RocksProperties {
         }
 
         private void monitorRocksFilesSummary() {
+            ITransaction tx = Sentry.startTransaction("db_metrics", "collect");
             try {
 //                long[] dataBlocksSize = new long[cfHandles.size()];
 //                Arrays.fill(dataBlocksSize, 0);
@@ -287,10 +286,13 @@ public class RocksProperties {
 //                LOG.debug("Database '{}' rocksdb summary from '{}' column families and '{}' SST files:\n{}\n",
 //                        database, cfHandles.size(), sstFiles, formattedSummary);
                 long dbSizeOnDisk = Files.walk(directory).mapToLong(p -> p.toFile().length()).sum();
-                Diagnostics.Metric dbSizeOnDiskMetric = new Diagnostics.Metric("storage.sizeOnDisk", "gauge", dbSizeOnDisk, null);
-                Diagnostics.reportMetrics(list(dbSizeOnDiskMetric));
+                tx.setMeasurement("storage.sizeOnDisk", dbSizeOnDisk, BYTE);
             } catch (IOException e) {
                 LOG.error(STORAGE_PROPERTY_EXCEPTION.message(), e);
+                tx.setThrowable(e);
+                tx.setStatus(SpanStatus.INTERNAL_ERROR);
+            } finally {
+                tx.finish();
             }
         }
 
