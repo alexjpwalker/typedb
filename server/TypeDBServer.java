@@ -84,7 +84,7 @@ public class TypeDBServer implements AutoCloseable {
     }
 
     protected static void configureLogging(CoreLogback logback, CoreConfig config) {
-        logback.configure((LoggerContext) LoggerFactory.getILoggerFactory(), config.log());
+        logback.configure((LoggerContext) LoggerFactory.getILoggerFactory(), config.log(), config.diagnostics());
         java.util.logging.Logger.getLogger("io.grpc").setLevel(Level.SEVERE);
     }
 
@@ -103,6 +103,7 @@ public class TypeDBServer implements AutoCloseable {
                 .dataDir(config.storage().dataDir())
                 .storageDataCacheSize(config.storage().databaseCache().dataSize())
                 .storageIndexCacheSize(config.storage().databaseCache().indexSize())
+                .diagnosticsReportingEnabled(config.diagnostics().reporting().enable())
                 .reasonerDebuggerDir(config.log().debugger().reasonerTracer().output().baseDirectory())
                 .reasonerPerfCounters(config.log().debugger().reasonerPerfCounters().isEnabled());
 
